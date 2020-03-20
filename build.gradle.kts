@@ -13,14 +13,19 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
 	mavenCentral()
+    jcenter()
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+    implementation("org.postgresql:postgresql:42.2.2")
+    implementation("org.jetbrains.exposed", "exposed-core", "0.22.1")
+    implementation("org.jetbrains.exposed", "exposed-jdbc", "0.22.1")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
 	}
