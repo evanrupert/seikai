@@ -1,4 +1,4 @@
-package io.studioreach.seikai.user
+package io.studioreach.seikai.form
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
@@ -6,12 +6,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("api/users")
-class UserController {
+@RequestMapping("forms")
+class FormController {
 
     @Autowired
-    lateinit var userRepo: UserRepo
+    lateinit var formRepo: FormRepo
 
     @GetMapping
-    fun all(): List<User> = userRepo.all()
+    fun all(): List<Form> {
+        return formRepo.all()
+    }
 }
