@@ -1,5 +1,4 @@
-create table users (
+create table forms (
     id uuid primary key not null,
-    name varchar(255),
-    age integer
+    field_data json
 )

@@ -35,6 +35,8 @@ dependencies {
 	}
 }
 
+defaultTasks("bootRun")
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
