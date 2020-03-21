@@ -1,8 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.flywaydb.gradle.task.FlywayMigrateTask
 
 plugins {
 	id("org.springframework.boot") version "2.2.5.RELEASE"
 	id("io.spring.dependency-management") version "1.0.9.RELEASE"
+
+    id("org.flywaydb.flyway") version "6.3.1"
+
 	kotlin("jvm") version "1.3.61"
 	kotlin("plugin.spring") version "1.3.61"
 }
@@ -41,3 +45,11 @@ tasks.withType<KotlinCompile> {
 		jvmTarget = "1.8"
 	}
 }
+
+tasks.register<FlywayMigrateTask>("migratedb") {
+    url = "jdbc:postgresql://localhost:5432/seikai"
+    user = "postgres"
+    password = "password"
+    locations = arrayOf("filesystem:migrations")
+}
+
