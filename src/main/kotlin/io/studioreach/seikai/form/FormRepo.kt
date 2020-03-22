@@ -12,8 +12,15 @@ class FormRepo {
     lateinit var db: MongoOperations
 
     fun all(): List<Form> {
-        println("In form repo")
         return db.findAll()
+    }
+
+    fun findById(id: String): Form? {
+        return db.findById(id, Form::class.java)
+    }
+
+    fun insert(form: Form): Form {
+        return db.insert(form)
     }
 
     fun deleteAll() {
