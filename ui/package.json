@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "elm make src/Main.elm --output ../static/index.html",
-    "watch": "chokidar '**/*.elm' -c 'elm make src/Main.elm --output ../static/index.html' --initial"
+    "watch": "$(yarn bin)/run-p watch-elm watch-sass",
+    "watch-elm": "chokidar '**/*.elm' -c 'elm make src/Main.elm --output ../static/dist/elm.js' --initial",
+    "watch-sass": "$(yarn bin)/node-sass --recursive --watch --output-style compressed --source-map true --output \"../static/dist\" styles"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +15,8 @@
   },
   "devDependencies": {
     "chokidar": "^3.3.1",
-    "chokidar-cli": "^2.1.0"
+    "chokidar-cli": "^2.1.0",
+    "npm-run-all": "^4.1.5",
+    "node-sass": "^4.13.1"
   }
 }

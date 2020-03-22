@@ -1,10 +1,22 @@
 import Browser
 import List
 import Html exposing (Html, text, div, h1, form, input, label)
+import Html.Attributes exposing (class)
 import Http
+import Url
+import Url.Parser as Parser
+import Browser.Navigation as Nav
 import Json.Decode as Json
 
-type alias Model = Form
+type Page
+    = NotFoundPage
+    | FormPage
+
+type alias Model =
+    { key : Nav.Key
+    , page : Page
+    , form : Form
+    }
 
 type alias Form =
     { id : String
@@ -19,23 +31,40 @@ type alias Field =
 
 type Msg
     = FetchedFormData (Result Http.Error Form)
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
 
--- TODO: Replace this with Browser.application to pull form id from url
 main : Program () Model Msg
 main =
-    Browser.document
+    Browser.application
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
+        , onUrlRequest = LinkClicked
+        , onUrlChange = UrlChanged
         }
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ({ id = ""
+init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
+    case parseUrl url of
+        Just formId ->
+            ({ key = key
+            , page = FormPage
+            , form = emptyFormData
+            }, fetchFormData formId)
+        Nothing ->
+            ({ key = key
+            , page = NotFoundPage
+            , form = emptyFormData
+            }, Cmd.none)
+
+emptyFormData : Form
+emptyFormData =
+    { id = ""
     , name = ""
     , fields = []
-    }, fetchFormData)
+    }
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -43,15 +72,21 @@ subscriptions _ =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Seikai"
-    , body = [body model]
-    }
+    case model.page of
+        FormPage ->
+            { title = model.form.name ++ " | Seikai"
+            , body = [formPage model.form]
+            }
+        NotFoundPage ->
+            { title = "Form Not Found | Seikai"
+            , body = [notFoundPage]
+            }
 
-body : Model -> Html Msg
-body model =
+formPage : Form -> Html Msg
+formPage form =
     div []
-        [ h1 [] [ text model.name ]
-        , formView model.fields
+        [ h1 [] [ text form.name ]
+        , formView form.fields
         ]
 
 formView : List Field -> Html Msg
@@ -66,23 +101,47 @@ formField field =
         , input [] []
         ]
 
+notFoundPage : Html Msg
+notFoundPage =
+    div [ class "not-found-container" ]
+        [ h1 [] [ text "We can't seem to find that form" ]
+        ]
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FetchedFormData result ->
             case result of
                 Ok formData ->
-                    (formData, Cmd.none)
+                    ({ model | form = formData }, Cmd.none)
                 Err _ ->
                     Debug.log (Debug.toString e)
-                    (model, Cmd.none)
+                    ({ model | page = NotFoundPage }, Cmd.none)
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model
+                    , Nav.pushUrl model.key (Url.toString url)
+                    )
+                Browser.External href ->
+                    ( model
+                    , Nav.load href
+                    )
+        UrlChanged _ ->
+            (model, Cmd.none)
+
+-- URL
+
+parseUrl : Url.Url -> Maybe String
+parseUrl = Parser.parse Parser.string
 
 -- HTTP
 
-fetchFormData : Cmd Msg
-fetchFormData =
+fetchFormData : String -> Cmd Msg
+fetchFormData formId =
     Http.get
-        { url = "/api/forms/5e7584da2abeb222d91eca5d"
+        { url = "/api/forms/" ++ formId
         , expect = Http.expectJson FetchedFormData formDataDecoder
         }
 
